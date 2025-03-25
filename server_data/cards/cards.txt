@@ -792,5 +792,14 @@
         "cardActionOnPlay": "",
         "cardActionOnAttack": "",
         "cardActionOnKill": ""
+    },
+    {
+        "name": "",
+        "cost": "",
+        "img": "",
+        "move": "",
+        "txtcolor": "",
+        "cardType": "",
+        "cardAction": ""
     }
 ]

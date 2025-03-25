@@ -26,7 +26,6 @@ import os
 from aiohttp import web
 from server_scripts.CardManager import CardManager
 from server_scripts.CardGameManager import CardGamePlayer
-from server_scripts.QuizManager import QuizManager
 from server_scripts import build_site
 
 ### set up directories
@@ -55,10 +54,8 @@ sio.attach(app)
 
 ### Set up internal server logic (manager classes)
 cardManager = CardManager('/cards', carddatadir)
-quizManager = QuizManager('/quiz', quizdatadir)
 cardGamePlayer = CardGamePlayer('/cardgame', carddatadir, cardManager)
 sio.register_namespace(cardManager)
-sio.register_namespace(quizManager)
 sio.register_namespace(cardGamePlayer)
 
 

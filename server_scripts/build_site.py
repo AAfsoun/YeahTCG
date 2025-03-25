@@ -15,7 +15,7 @@ DEPLOYMENT_DIR = 'deployment'
 
 def wipe_file(filename : str):
     """ make new file / wipe it if it exists """
-    with open(filename, 'w') as outfile:
+    with open(filename, 'w', encoding='utf-8') as outfile:
         outfile.write('')
         outfile.close()
 
@@ -32,7 +32,7 @@ def convert_path(filename : str) -> str:
 def get_menu_categories(basedir : str = SOURCE_DIR) -> dict:
     """
     Build a nested dictionary to represent the filesystem.
-    
+
     example:
         source
           |
@@ -57,7 +57,7 @@ def get_menu_categories(basedir : str = SOURCE_DIR) -> dict:
     for d in os.listdir(basedir):
         if d.startswith('.'):
             continue
-        
+
         currentdir = os.path.join(basedir, d)
 
         if os.path.isdir(currentdir):
@@ -80,7 +80,7 @@ def deparse_filename(name : str) -> str:
     out = out.title().replace('_', ' ')
 
     return out
-    
+
 
 
 def build_menu_item(basedir : str,
@@ -91,7 +91,7 @@ def build_menu_item(basedir : str,
     """
 
     link = convert_path(os.path.join(basedir, name))
-    
+
     out = deparse_filename(name)
 
     # then, encapsulate it in other stuff
@@ -100,7 +100,7 @@ def build_menu_item(basedir : str,
     out = f'<a href="{link}">{out}</a>'
 
     return out
-    
+
 
 def build_menu(categories : dict,
                basedir : str = SOURCE_DIR,
@@ -108,13 +108,13 @@ def build_menu(categories : dict,
     """
     Build the menu (as given by get_menu_categories, and returns the string
     """
-    
+
     out = ''
 
     # first get all the contents
     for c in categories:
         cat = ''
-        
+
         # it's a file
         if categories[c] == {}:
             cat = build_menu_item(basedir, c)
@@ -122,7 +122,7 @@ def build_menu(categories : dict,
         # it's a category (folder), so make it a menu
         else:
 
-            # get sub content            
+            # get sub content
             cat = build_menu(categories[c],
                              os.path.join(basedir, c),
                              False)
@@ -152,23 +152,23 @@ def write_page(filename : str, menu : str):
 
 
     outfilename = os.path.join(DEPLOYMENT_DIR, filename)
-    
+
     wipe_file(outfilename)
-    with open(outfilename, 'a') as outfile:
+    with open(outfilename, 'a', encoding='utf-8') as outfile:
 
         # header
-        with open(os.path.join(SOURCE_DIR, HEADER_NAME), 'r') as infile:
+        with open(os.path.join(SOURCE_DIR, HEADER_NAME), 'r', encoding='utf-8') as infile:
             outfile.write(infile.read())
 
         # menu
         outfile.write(menu)
-    
+
         # main body
-        with open(os.path.join(SOURCE_DIR, filename), 'r') as infile:
+        with open(os.path.join(SOURCE_DIR, filename), 'r', encoding='utf-8') as infile:
             outfile.write(infile.read())
 
         # footer
-        with open(os.path.join(SOURCE_DIR, FOOTER_NAME), 'r') as infile:
+        with open(os.path.join(SOURCE_DIR, FOOTER_NAME), 'r', encoding='utf-8') as infile:
             outfile.write(infile.read())
 
 def write_pages(categories : dict, menu : str, basedir : str = ''):
@@ -179,7 +179,7 @@ def write_pages(categories : dict, menu : str, basedir : str = ''):
         unlike the previous functions, this one does not take the source
         directory as the base directory, as the point of it is to build from
         source to deployment.
-    
+
     """
 
     # for first-level only (may want to expand this later...):
@@ -195,9 +195,13 @@ def write_pages(categories : dict, menu : str, basedir : str = ''):
 
         # it's a file, so write it now
         if categories[c] == {}:
-            write_page(os.path.join(basedir,c), menu)
+            try:
+                write_page(os.path.join(basedir,c), menu)
+            except UnicodeDecodeError as e:
+                print(f"Error processing file {os.path.join(basedir,c)}: {e}")
+                # You could implement a fallback strategy here if needed
 
-        else: 
+        else:
             write_pages(categories[c], menu, os.path.join(basedir,c))
 
 
@@ -208,10 +212,6 @@ def make_all():
     menu = build_menu(categories)
 
     write_pages(categories, menu)
-
-
-
-
 
 
 if __name__ == '__main__':
